@@ -6,6 +6,7 @@ class WordEntity:
         self.ru_text = ""
         self.file_url = ""
         self.file_name = ""
+        self.ipa_text = ""
 
 
 

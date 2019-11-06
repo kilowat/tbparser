@@ -10,6 +10,7 @@ limit = 200  # max download file every word
 thread_count = 4  # numbers how match start the threads
 env_config_file_path = "C:\\work_dir\\webserver_5_5\\OSPanel\domains\\true-english.ru\\.env"
 file_path = "C:\\work_dir\\webserver_5_5\\OSPanel\\domains\\true-english.ru\\storage\\app\public\\phrases\\"
+
 db = Db(env_config_file_path)
 
 # to do get from db

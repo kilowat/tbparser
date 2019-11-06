@@ -2,6 +2,7 @@ import json
 import re
 import requests
 import logging
+import lib.eng_to_ipa as ipa
 from lxml import html
 from .word_entity import WordEntity
 
@@ -49,6 +50,7 @@ class Parser:
         for item in items:
             entity = WordEntity(word)
             entity.en_text = self.__get_en_text(item)
+            entity.ipa_text = ipa.convert(entity.en_text)
             entity.ru_text = self.__get_ru_text(item)
             entity.file_url = self.__get_file_url(item)
             entity.file_name = self.__get_file(entity)

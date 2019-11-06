@@ -52,7 +52,7 @@ class Db:
     def __insert(self, entity):
         cur = self.connect.cursor()
 
-        query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ru_text`) VALUES ('{entity.word}', '{entity.file_name}', '{entity.en_text}', '{entity.ru_text}');"
+        query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES ('{entity.word}', '{entity.file_name}', '{entity.en_text}', '{entity.ipa_text}', '{entity.ru_text}');"
         cur.execute(query)
         cur.close()
 
