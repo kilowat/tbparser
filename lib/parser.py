@@ -103,9 +103,10 @@ class Parser:
 
         for ru_item in nodes:
             text = self.__clear_string(ru_item.text_content())
+            text = text.replace("ё", "e");
             ru_text_list.append(text)
 
-        return json.dumps(ru_text_list)
+        return "|".join(ru_text_list)
 
     def __get_file_url(self, item):
         node = item.find(self.audio_query)
@@ -123,7 +124,7 @@ class Parser:
         return url_text
 
     def __clear_string(self, str):
-        text_tmp = re.sub('[^A-Za-z0-9-А-Яа-я  !,?]+', '', str)
+        text_tmp = re.sub('[^A-Za-z0-9-А-Яа-я  !,?.]+', '', str)
         text_tmp = re.sub(' +', ' ', text_tmp)
         text_tmp = text_tmp.strip()
 
