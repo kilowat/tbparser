@@ -7,7 +7,7 @@ from lib.word_entity import WordEntity
 
 limit = 200  # max download file every word
 
-thread_count = 5  # numbers how match start the threads
+thread_count = 4  # numbers how match start the threads
 env_config_file_path = "C:\\work_dir\\webserver_5_5\\OSPanel\domains\\true-english.ru\\.env"
 file_path = "C:\\work_dir\\webserver_5_5\\OSPanel\\domains\\true-english.ru\\storage\\app\public\\phrases\\"
 db = Db(env_config_file_path)
@@ -20,10 +20,9 @@ start_time = time.time()
 
 
 def run():
-    p = Parser(limit, file_path=file_path)
     db = Db(env_config_file_path)
-
     while len(words) > 0:
+        p = Parser(limit, file_path=file_path)
         word = words.pop()
         res_list = p.parse(word)
 

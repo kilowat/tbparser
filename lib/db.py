@@ -59,7 +59,6 @@ class Db:
     def close_connect(self):
         self.connect.close()
 
-
     def select_words(self):
         cur = self.connect.cursor()
         query = ('SELECT words.name FROM words '
