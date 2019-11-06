@@ -1,26 +1,42 @@
+from lib.db import Db
 from lib.parser import Parser
 import time
 import threading
 
-limit = 5  # max download file every word
-thread_count = 5  # numbers how match start the threads
+from lib.word_entity import WordEntity
+
+limit = 200  # max download file every word
+
+thread_count = 10  # numbers how match start the threads
+env_config_file_path = "C:\\work_dir\\webserver_5_5\\OSPanel\domains\\true-english.ru\\.env"
+file_path = "C:\\work_dir\\webserver_5_5\\OSPanel\\domains\\true-english.ru\\storage\\app\public\\phrases\\"
+db = Db(env_config_file_path)
 
 # to do get from db
-words = [
-    "run",
-    "help",
-    "take"
-]
+words = db.select_words()
 
 start_time = time.time()
 
 
 def run():
-    p = Parser(limit)
+    p = Parser(limit, file_path=file_path)
     while len(words) > 0:
-        res = p.parse(words.pop())
-    #       todo insert in to db
+        word = words.pop()
+        res_list = p.parse(word)
+
+        print(f"word:{word} find:{len(res_list)}")
+        print("time: %s seconds ---" % int((time.time() - start_time)))
+
+        if len(res_list) > 0:
+            for res in res_list:
+                db.add(res)
+        else:
+            entity = WordEntity(word)
+            db.add(entity)
+            
     print("--- %s seconds ---" % (time.time() - start_time))
+
+# -------------- Main process ----------------
 
 
 threads = []

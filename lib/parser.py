@@ -36,13 +36,18 @@ class Parser:
 
         result = []
 
+        self.__run_chunk(word, result)
+
+        return result
+
+    def __run_chunk(self, word, result):
         r = requests.get(self.__get_url())
         self.doc = html.fromstring(r.text)
 
         items = self.doc.cssselect('.sentence-and-translations')
 
         for item in items:
-            entity = WordEntity("run")
+            entity = WordEntity(word)
             entity.en_text = self.__get_en_text(item)
             entity.ru_text = self.__get_ru_text(item)
             entity.file_url = self.__get_file_url(item)
@@ -60,11 +65,9 @@ class Parser:
         # recurse
         if next_page > 0 and self.__downloaded < self.limit:
             self.page = next_page
-            self.parse(word)
+            self.__run_chunk(word, result)
 
         self.__downloaded = 0
-
-        return result
 
     def __get_file(self, entity):
         r = requests.get(entity.file_url)
@@ -73,7 +76,7 @@ class Parser:
         content_length = header.get('content-length', 0)
 
         if content_length:
-            name = self.__make_file_name(entity.file_url) + ".mp3"
+            name = self.__make_file_name(entity.file_url)
             open(self.file_path + name, 'wb').write(r.content)
 
         return name
@@ -94,6 +97,7 @@ class Parser:
 
         if len(nodes) == 0:
             self.__error_log(self.ru_text_query)
+            return ""
 
         for ru_item in nodes:
             text = self.__clear_string(ru_item.text_content())
