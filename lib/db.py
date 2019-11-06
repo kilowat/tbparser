@@ -32,10 +32,19 @@ class Db:
             self.__insert(entity)
 
     def __is_inserted(self, entity):
+        count = False
+
+        if not entity.file_name:
+            return False
+
         cur = self.connect.cursor()
         query = f"SELECT count(*) FROM {self.__table_phrases_name} WHERE file_name='{entity.file_name}'"
         cur.execute(query)
-        count = cur.fetchone()[0] > 0
+        res = cur.fetchone()
+
+        if len(res) > 0:
+            count = res[0] > 0
+
         cur.close()
 
         return count
@@ -44,12 +53,12 @@ class Db:
         cur = self.connect.cursor()
 
         query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ru_text`) VALUES ('{entity.word}', '{entity.file_name}', '{entity.en_text}', '{entity.ru_text}');"
-        try:
-            cur.execute(query)
-        except pymysql.InterfaceError as e:
-            print("Pymysql error: " + e.message + "query: " + query)
-        finally:
-            cur.close()
+        cur.execute(query)
+        cur.close()
+
+    def close_connect(self):
+        self.connect.close()
+
 
     def select_words(self):
         cur = self.connect.cursor()
