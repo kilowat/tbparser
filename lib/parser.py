@@ -103,7 +103,6 @@ class Parser:
 
         for ru_item in nodes:
             text = self.__clear_string(ru_item.text_content())
-            text = text.replace("ё", "e");
             ru_text_list.append(text)
 
         return "|".join(ru_text_list)
@@ -124,7 +123,7 @@ class Parser:
         return url_text
 
     def __clear_string(self, str):
-        text_tmp = re.sub('[^A-Za-z0-9-А-Яа-я  !,?.]+', '', str)
+        text_tmp = re.sub('[^A-Za-z0-9-А-Яа-я  !,?.ё\'"]+', '', str)
         text_tmp = re.sub(' +', ' ', text_tmp)
         text_tmp = text_tmp.strip()
 

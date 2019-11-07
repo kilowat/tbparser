@@ -52,8 +52,8 @@ class Db:
     def __insert(self, entity):
         cur = self.connect.cursor()
 
-        query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES ('{entity.word}', '{entity.file_name}', '{entity.en_text}', '{entity.ipa_text}', '{entity.ru_text}');"
-        cur.execute(query)
+        query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES (%s, %s, %s, %s, %s);"
+        cur.execute(query, (entity.word, entity.file_name, entity.en_text, entity.ipa_text, entity.ru_text))
         cur.close()
 
     def close_connect(self):
