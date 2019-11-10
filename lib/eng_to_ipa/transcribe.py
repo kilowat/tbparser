@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from os.path import join, abspath, dirname
-import lib.eng_to_ipa.stress as stress
+from . import stress
 from collections import defaultdict
 
 

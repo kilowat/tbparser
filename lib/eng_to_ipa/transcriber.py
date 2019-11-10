@@ -2,7 +2,7 @@
 
 import re
 from os.path import join, abspath, dirname
-import lib.eng_to_ipa.stress
+from . import stress
 import sqlite3
 from collections import defaultdict
 

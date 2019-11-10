@@ -24,37 +24,17 @@ class Db:
                 env_config[sp[0]] = sp[1]
         return env_config
 
-    def add(self, entity_list):
-        self.__insert_only_new(entity_list)
-
-    def __insert_only_new(self, entity):
-        if not self.__is_inserted(entity):
-            self.__insert(entity)
-
-    def __is_inserted(self, entity):
-        count = False
-
-        if not entity.file_name:
-            return False
-
-        cur = self.connect.cursor()
-        query = f"SELECT count(*) FROM {self.__table_phrases_name} WHERE file_name='{entity.file_name}'"
-        cur.execute(query)
-        res = cur.fetchone()
-
-        if len(res) > 0:
-            count = res[0] > 0
-
-        cur.close()
-
-        return count
+    def add(self, entity):
+        self.__insert(entity)
 
     def __insert(self, entity):
-        cur = self.connect.cursor()
-
-        query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES (%s, %s, %s, %s, %s);"
-        cur.execute(query, (entity.word, entity.file_name, entity.en_text, entity.ipa_text, entity.ru_text))
-        cur.close()
+        try:
+            cur = self.connect.cursor()
+            query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES (%s, %s, %s, %s, %s);"
+            cur.execute(query, (entity.word, entity.file_name, entity.en_text, entity.ipa_text, entity.ru_text))
+            self.connect.commit()
+        finally:
+            cur.close()
 
     def close_connect(self):
         self.connect.close()

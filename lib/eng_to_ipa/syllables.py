@@ -1,7 +1,7 @@
 import re
 import os
 import json
-from lib.eng_to_ipa import transcribe
+from . import transcribe
 
 
 with open(os.path.join(os.path.abspath(os.path.dirname(__file__)),
