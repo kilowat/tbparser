@@ -142,10 +142,11 @@ class Parser:
         return next
 
     def __error_log(self, text):
-        now = datetime.datetime.now()
-        logging.basicConfig(filename=self.__log_file_name, level=logging.INFO)
-        msg = str(now)[:19] +" word:" + self.word + "Element not find query:" + text
-        logging.info(msg)
+        pass
+        #now = datetime.datetime.now()
+        #logging.basicConfig(filename=self.__log_file_name, level=logging.INFO)
+        #msg = str(now)[:19] +" word:" + self.word + " Element not find query:" + text
+        #logging.info(msg)
 
     def __make_file_name(self, file_url):
         res = file_url.replace('https://', '')
