@@ -24,26 +24,42 @@ class Db:
                 env_config[sp[0]] = sp[1]
         return env_config
 
-    def add(self, entity):
-        self.__insert(entity)
-
-    def __insert(self, entity):
+    def add_phrase(self, entity, phrase_table, word_phrase_table):
         try:
             cur = self.connect.cursor()
-            query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{self.__table_phrases_name}` (`word`, `file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES (%s, %s, %s, %s, %s);"
-            cur.execute(query, (entity.word, entity.file_name, entity.en_text, entity.ipa_text, entity.ru_text))
+            query_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{phrase_table}` (`file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES (%s, %s, %s, %s);"
+
+            cur.execute(query_phrase_table, (entity.file_name, entity.en_text, entity.ipa_text, entity.ru_text))
+
+            query_word_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` (`file_name`, `word`) VALUES (%s, %s);"
+            cur.execute(query_word_phrase_table, (entity.file_name, entity.word))
+
             self.connect.commit()
+        except:
+            pass
+        finally:
+            cur.close()
+
+    def add_phrase_word_checked(self, entity, word_phrase_table):
+        try:
+            cur = self.connect.cursor()
+            query_word_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` (`file_name`, `word`) VALUES (%s, %s);"
+            cur.execute(query_word_phrase_table, (entity.file_name, entity.word))
+
+            self.connect.commit()
+        except Exception as err:
+            print("error: {0}".format(err))
         finally:
             cur.close()
 
     def close_connect(self):
         self.connect.close()
 
-    def select_words(self):
+    def select_words(self, table):
         cur = self.connect.cursor()
         query = ('SELECT words.name FROM words '
-                'LEFT JOIN phrases ON phrases.word=words.name '
-                'WHERE phrases.word IS NULL AND length(words.name) > 2'
+                'LEFT JOIN '+ table +' ON '+table+'.word=words.name '
+                'WHERE '+ table +'.word IS NULL AND length(words.name) > 2'
                 ' ORDER BY words.name DESC')
 
         cur.execute(query)

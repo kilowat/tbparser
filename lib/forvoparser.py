@@ -6,32 +6,29 @@ import logging
 import lib.eng_to_ipa as ipa
 from lxml import html
 from .word_entity import WordEntity
+from yandex.Translater import Translater
 
 
-class Parser:
-    """
-    parser tatoeba.org
-    :param limit: limit download elements
-    :type limit: int
-    :param file_path: path to save downloaded files
-    """
+class Forvoparser:
 
-    def __init__(self, limit=100, file_path="./tmp/", log_file_name="log/tb_parser.log"):
+    def __init__(self, limit=100, file_path="./tmp/", log_file_name="log/forvo_parser.log", yandex_key=""):
         self.word = ""
         self.ru_text_query = 'div[@class="direct translations"]//div[@class="text"]'
-        self.en_text_query = 'div//div[@class="sentence "]//div[@class="text"]'
-        self.audio_query = 'div//div[@class="sentence "]/md-button'
-        self.next_page_query = '.paging'
+        self.en_text_query = 'a[@class="word"]'
+        self.audio_query = 'span'
+        self.next_page_query = '//nav[@class="pagination"]//ol//li'
         self.file_path = file_path
-        self.doc = ''
         self.page = 1
         self.limit = limit
         self.__downloaded = 0
         self.__log_file_name = log_file_name
+        self.yandex_key = yandex_key
 
     def __get_url(self):
-        return "https://tatoeba.org/eng/sentences/search?query=" + self.word + "&from=eng&to=rus&orphans=no&unapproved=no&user=&tags=&list=&has_audio=yes&trans_filter=limit&trans_to=rus&trans_link=&trans_user=&trans_orphan=&trans_unapproved=&trans_has_audio=&sort=relevance&page=" + str(
-            self.page)
+        if self.page < 2:
+            return "https://forvo.com/search/" + self.word + "/en/"
+        else:
+            return "https://forvo.com/search/" + self.word + "/en/page-" + str(self.page)
 
     def parse(self, word):
         self.word = word
@@ -46,13 +43,13 @@ class Parser:
         r = requests.get(self.__get_url())
         self.doc = html.fromstring(r.text)
 
-        items = self.doc.cssselect('.sentence-and-translations')
+        items = self.doc.cssselect('.list-phrases ul li')
 
         for item in items:
             entity = WordEntity(word)
             entity.en_text = self.__get_en_text(item)
             entity.ipa_text = ipa.convert(entity.en_text)
-            entity.ru_text = self.__get_ru_text(item)
+            entity.ru_text = self.__get_ru_text(entity)
             entity.file_url = self.__get_file_url(item)
             entity.file_name = self.__get_file(entity)
 
@@ -89,38 +86,40 @@ class Parser:
 
         if query_node is not None:
             text = query_node.text_content()
-
             return self.__clear_string(text)
         else:
             self.__error_log(self.en_text_query)
 
-    def __get_ru_text(self, item):
-        ru_text_list = []
-        nodes = item.findall(self.ru_text_query)
+    def __get_ru_text(self, entity):
+        text = ""
+        #tr = Translater()
+        #tr.set_key(self.yandex_key)
+        #tr.set_from_lang("en")
+        #tr.set_to_lang("ru")
+        #tr.set_text(entity.en_text)
+        #text = tr.translate()
 
-        if len(nodes) == 0:
-            self.__error_log(self.ru_text_query)
-            return ""
-
-        for ru_item in nodes:
-            text = self.__clear_string(ru_item.text_content())
-            ru_text_list.append(text)
-
-        return "|".join(ru_text_list)
+        return text
 
     def __get_file_url(self, item):
+        url = 'https://forvo.com/player-phrasesMp3Handler.php?path='
         node = item.find(self.audio_query)
         url_text = ""
-
         if node is not None:
             attrs = node.attrib
-            if attrs['ng-click'] is not None:
-                url_text = attrs['ng-click']
-                url_text = url_text.replace("vm.playAudio('", "")
+            if attrs['onclick'] is not None:
+                url_text = attrs['onclick']
+                url_text = url_text.replace("PlayPhrase(", "")
                 url_text = url_text.replace("')", "")
+                url_text = url_text.replace("'", "")
+                url_s = url_text.split(',')
+                try:
+                    id = url_s[1]
+                    url_text = url + id
+                except KeyError:
+                    pass
         else:
             self.__error_log(self.audio_query)
-
         return url_text
 
     def __clear_string(self, str):
@@ -131,24 +130,25 @@ class Parser:
         return text_tmp
 
     def __get_next_page(self):
-        nodes = self.doc.cssselect(self.next_page_query)
         next = -1
-
-        if len(nodes) > 0:
-            next_a = nodes[0].find('li[@class="active"]').getnext().find('a')
-            if next_a is not None and next_a.text_content().isdigit():
-                next = int(next_a.text_content())
-
-        return next
+        nodes = self.doc.xpath(self.next_page_query)
+        try:
+            node = nodes[self.page]
+            next_li = node.getnext()
+            if next_li is not None and next_li.text_content().isdigit():
+                next = int(next_li.text_content())
+            return next
+        except IndexError:
+            return 0
 
     def __error_log(self, text):
         pass
         now = datetime.datetime.now()
         logging.basicConfig(filename=self.__log_file_name, level=logging.INFO)
-        msg = str(now)[:19] +" word:" + self.word + " Element not find query:" + text
+        msg = str(now)[:19] + " word:" + self.word + " Element not find query:" + text
         logging.info(msg)
 
     def __make_file_name(self, file_url):
-        res = file_url.replace('https://', '')
-        res = res.replace("/", "_")
+        res = file_url.replace("https://forvo.com/player-phrasesMp3Handler.php?path=", "")
+        res = res + ".mp3"
         return res
