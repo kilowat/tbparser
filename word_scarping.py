@@ -12,12 +12,14 @@ from lib.word_entity import WordEntity
 
 thread_count = conf.main['thread_count']
 env_config_file_path = conf.main['env_config_file_path']
-file_path = conf.tb_conf['file_path']
+file_path = conf.word_conf['file_path']
+yandex_key = conf.main['yandex_key']
 
 db = Db(env_config_file_path)
 
 # to do get from db
-words = ["run"]
+words = db.select_words_to_translate(limit=conf.word_conf['limit'])
+
 
 db.close_connect()
 
@@ -28,18 +30,14 @@ def run():
     db = Db(env_config_file_path)
 
     while len(words) > 0:
-        p = WordParser(file_path=file_path)
+        p = WordParser(file_path=file_path, yandex_key=yandex_key)
         word = words.pop()
         res = p.parse(word)
         print(f"word:{word} finded")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
         if res is not None:
-            pass
-            #db.add_phrase(res, 'phrases', 'phrases_word')
-        else:
-            entity = WordEntity(word)
-            #db.add_phrase_word_checked(entity, 'phrases_word')
+           db.update_word_table(res)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 

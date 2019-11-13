@@ -3,6 +3,9 @@ import json
 import re
 import requests
 import logging
+
+from yandex.Translater import Translater
+
 import lib.eng_to_ipa as ipa
 from lxml import html
 from .word_entity import WordEntity
@@ -16,53 +19,98 @@ class WordParser:
     :param file_path: path to save downloaded files
     """
 
-    def __init__(self, file_path="./tmp/", log_file_name="log/word_parser.log"):
+    def __init__(self, file_path="./tmp/", log_file_name="log/word_parser.log", yandex_key=""):
+        self.__headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
         self.word = ""
-        self.ru_text_query = 'div[@class="direct translations"]//div[@class="text"]'
         self.file_path = file_path
         self.__log_file_name = log_file_name
-        self.doc = ''
+        self.__yandex_key = yandex_key
 
-    def __get_url(self):
-        return "https://tatoeba.org/eng/sentences/search?query=" + self.word + "&from=eng&to=rus&orphans=no&unapproved=no&user=&tags=&list=&has_audio=yes&trans_filter=limit&trans_to=rus&trans_link=&trans_user=&trans_orphan=&trans_unapproved=&trans_has_audio=&sort=relevance&page=" + str(
-            self.page)
+    def __word_hunt(self, entity):
+        url = "https://wooordhunt.ru/word/" + entity.word
+        r = requests.get(url)
+        doc = html.fromstring(r.text)
+        transcription = doc.xpath('//span[@class="transcription"]')
+
+        if len(transcription) > 0:
+            transcription_text = transcription[0].text_content()
+            transcription_text = transcription_text.replace('|', '')
+            entity.ipa_text = transcription_text
+
+        translate = doc.xpath('//span[@class="t_inline_en"]')
+
+        if len(translate) > 0:
+            entity.ru_text = self.__clear_string(translate[0].text_content())
+
+        audio = doc.xpath('//audio[@id="audio_us"]//source')
+        if len(audio) > 0:
+            entity.file_url = "https://wooordhunt.ru" + audio[0].attrib['src']
+
+    def __reverso_translate(self, entity):
+        url = "https://context.reverso.net/translation/english-russian/" + entity.word
+        r = requests.get(url, headers=self.__headers)
+        doc = html.fromstring(r.text)
+        nodes = doc.xpath('//div[@id="translations-content"]//a')
+
+        word_list = []
+
+        for node in nodes:
+            word_list.append(self.__clear_string(node.text_content()))
+
+        if len(word_list) > 0:
+            entity.ru_text = ", ".join(word_list)
 
     def parse(self, word):
         self.word = word
 
-        result = []
+        entity = WordEntity(word)
 
-        return result
+        self.__reverso_translate(entity)
 
-    def __get_file(self, entity):
+        self.__word_hunt(entity)
+
+        if entity.ipa_text == "":
+            entity.ipa_text = ipa.convert(entity.en_text)
+
+        if entity.ru_text == "":
+            self.__reverso_translate(entity)
+
+        if entity.ru_text == "":
+            entity.ru_text = self.__yandex_translate(entity)
+
+        if entity.file_url == "":
+            self.__dict_file_download(entity)
+
+        if entity.file_url == "":
+            self.__tureng_file_download(entity)
+
+        if entity.file_url:
+            self.__save_file(entity)
+
+        return entity
+
+    def __save_file(self, entity):
         r = requests.get(entity.file_url)
-        name = ""
         header = r.headers
         content_length = header.get('content-length', 0)
 
         if content_length:
-            name = self.__make_file_name(entity.file_url)
+            name = entity.word.replace(" ", "_")
+            name = name.replace("-", "_")
+            entity.file_name = name
             open(self.file_path + name, 'wb').write(r.content)
 
-        return name
+    def __yandex_translate(self, entity):
+        tr = Translater()
+        tr.set_key(self.__yandex_key)
+        tr.set_from_lang("en")
+        tr.set_to_lang("ru")
+        tr.set_text(entity.word)
+        text = tr.translate()
 
-    def __get_ru_text(self, item):
-        pass
-
-    def __get_file_url(self, item):
-        node = item.find(self.audio_query)
-        url_text = ""
-
-        if node is not None:
-            attrs = node.attrib
-            if attrs['ng-click'] is not None:
-                url_text = attrs['ng-click']
-                url_text = url_text.replace("vm.playAudio('", "")
-                url_text = url_text.replace("')", "")
-        else:
-            self.__error_log(self.audio_query)
-
-        return url_text
+        return text
 
     def __clear_string(self, str):
         text_tmp = re.sub('[^A-Za-z0-9-А-Яа-я  !,?.ё\'"]+', '', str)
@@ -71,7 +119,6 @@ class WordParser:
 
         return text_tmp
 
-
     def __error_log(self, text):
         pass
         now = datetime.datetime.now()
@@ -79,7 +126,26 @@ class WordParser:
         msg = str(now)[:19] +" word:" + self.word + " Element not find query:" + text
         logging.info(msg)
 
-    def __make_file_name(self, file_url):
-        res = file_url.replace('https://', '')
-        res = res.replace("/", "_")
-        return res
+    def __dict_file_download(self, entity):
+        url = "https://www.dictionary.com/browse/" + entity.word
+
+        r = requests.get(url, headers=self.__headers)
+        doc = html.fromstring(r.text)
+
+        nodeAudio = doc.xpath('//audio//source[2]')
+        check_text = doc.xpath('//h1//text()')
+
+        if len(check_text) > 0 and len(nodeAudio) > 0:
+            check_text = check_text[0].replace(" ", "-")
+            if check_text == entity.word:
+                entity.file_url = nodeAudio[0].attrib['src']
+
+    def __tureng_file_download(self, entity):
+        url = "https://tureng.com/en/turkish-english/" + entity.word
+        r = requests.get(url, headers=self.__headers)
+        doc = html.fromstring(r.text)
+
+        node = doc.xpath("//audio[@id='turengVoiceENTRENus']//source")
+        if(len(node) > 0):
+            file_path = "https:" + node[0].attrib['src']
+            entity.file_url = file_path

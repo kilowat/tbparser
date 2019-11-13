@@ -59,7 +59,8 @@ class TBparser:
             if self.__downloaded > self.limit:
                 break
 
-            result.append(entity)
+            if(entity.ru_text != ''):
+                result.append(entity)
 
             self.__downloaded += 1
 

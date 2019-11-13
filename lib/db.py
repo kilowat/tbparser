@@ -30,15 +30,11 @@ class Db:
             query_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{phrase_table}` (`file_name`, `en_text`, `ipa_text`,`ru_text`) VALUES (%s, %s, %s, %s);"
 
             cur.execute(query_phrase_table, (entity.file_name, entity.en_text, entity.ipa_text, entity.ru_text))
-
-            query_word_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` (`file_name`, `word`) VALUES (%s, %s);"
-            cur.execute(query_word_phrase_table, (entity.file_name, entity.word))
-
             self.connect.commit()
-        except:
+        except Exception as err:
             pass
         finally:
-            cur.close()
+            self.add_phrase_word_checked(entity, word_phrase_table)
 
     def add_phrase_word_checked(self, entity, word_phrase_table):
         try:
@@ -55,12 +51,11 @@ class Db:
     def close_connect(self):
         self.connect.close()
 
-    def select_words(self, table):
+    def select_words_to_translate(self, limit=1000):
         cur = self.connect.cursor()
         query = ('SELECT words.name FROM words '
-                'LEFT JOIN '+ table +' ON '+table+'.word=words.name '
-                'WHERE '+ table +'.word IS NULL AND length(words.name) > 2'
-                ' ORDER BY words.name DESC')
+            'WHERE words.translate="" AND length(words.name) > 2'
+            ' ORDER BY RAND() LIMIT ' + str(limit))
 
         cur.execute(query)
 
@@ -70,3 +65,31 @@ class Db:
             res.append(row[0])
 
         return res
+
+    def select_words(self, table, limit=1000):
+        cur = self.connect.cursor()
+        query = ('SELECT words.name FROM words '
+                'LEFT JOIN '+ table +' ON '+table+'.word=words.name '
+                'WHERE '+ table +'.word IS NULL AND length(words.name) > 2'
+                ' ORDER BY words.name DESC LIMIT ' + str(limit))
+
+        cur.execute(query)
+
+        res = []
+
+        for row in cur:
+            res.append(row[0])
+
+        return res
+
+    def update_word_table(self, entity):
+        try:
+            cur = self.connect.cursor()
+            query_word = f"UPDATE {self.__conf['DB_DATABASE']}.words SET transcription=%s, translate=%s WHERE `name`=%s"
+            cur.execute(query_word, (entity.ipa_text, entity.ru_text, entity.word))
+
+            self.connect.commit()
+        except Exception as err:
+            print("error: {0}".format(err))
+        finally:
+            cur.close()
