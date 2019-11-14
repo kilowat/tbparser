@@ -20,7 +20,7 @@ db = Db(env_config_file_path)
 
 # to do get from db
 words = db.select_words('phrases_word')
-words = ["run"]
+
 db.close_connect()
 
 start_time = time.time()
