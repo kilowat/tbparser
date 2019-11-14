@@ -34,21 +34,21 @@ class Db:
         except Exception as err:
             pass
         finally:
-            if (self.__is_added_phrase_word(entity, word_phrase_table)) == 0:
-                self.add_phrase_word(entity, word_phrase_table)
+            self.add_phrase_word(entity, word_phrase_table)
 
 # add to relations table file_name -> word
     def add_phrase_word(self, entity, word_phrase_table):
-        try:
-            cur = self.connect.cursor()
-            query_word_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` (`file_name`, `word`) VALUES (%s, %s);"
-            cur.execute(query_word_phrase_table, (entity.file_name, entity.word))
+        if (self.__is_added_phrase_word(entity, word_phrase_table)) == 0:
+            try:
+                cur = self.connect.cursor()
+                query_word_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` (`file_name`, `word`) VALUES (%s, %s);"
+                cur.execute(query_word_phrase_table, (entity.file_name, entity.word))
 
-            self.connect.commit()
-        except Exception as err:
-            print("error: {0}".format(err))
-        finally:
-            cur.close()
+                self.connect.commit()
+            except Exception as err:
+                print("error: {0}".format(err))
+            finally:
+                cur.close()
 
     def close_connect(self):
         self.connect.close()

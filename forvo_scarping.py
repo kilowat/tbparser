@@ -43,7 +43,7 @@ def run():
                 db.add_phrase(res, 'sentence_forvo', 'sentence_word')
         else:
             entity = WordEntity(word)
-            db.add_phrase_word_checked(entity, 'sentence_word')
+            db.add_phrase_word(entity, 'sentence_word')
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -59,5 +59,5 @@ for i in range(thread_count):
     t.start()
 
 now = datetime.datetime.now()
-logging.basicConfig(filename='log/forvo_info.log', level=logging.INFO)
+logging.basicConfig(filename=conf.main['log_dir']+'forvo_info.log', level=logging.INFO)
 logging.info("time end work:" + str(now)[:19])

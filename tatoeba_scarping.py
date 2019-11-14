@@ -42,7 +42,7 @@ def run():
                 db.add_phrase(res, 'phrases', 'phrases_word')
         else:
             entity = WordEntity(word)
-            db.add_phrase_word_checked(entity, 'phrases_word')
+            db.add_phrase_word(entity, 'phrases_word')
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -58,5 +58,5 @@ for i in range(thread_count):
     t.start()
 
 now = datetime.datetime.now()
-logging.basicConfig(filename='log/tb_info.log', level=logging.INFO)
+logging.basicConfig(filename=conf.main['log_dir'] + 'tb_info.log', level=logging.INFO)
 logging.info("time end work:" + str(now)[:19])

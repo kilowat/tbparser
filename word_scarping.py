@@ -53,5 +53,5 @@ for i in range(thread_count):
     t.start()
 
 now = datetime.datetime.now()
-logging.basicConfig(filename='log/word_parse_info.log', level=logging.INFO)
+logging.basicConfig(filename=conf.main['log_dir'] + 'word_parse_info.log', level=logging.INFO)
 logging.info("time end work:" + str(now)[:19])
