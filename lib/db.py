@@ -34,9 +34,11 @@ class Db:
         except Exception as err:
             pass
         finally:
-            self.add_phrase_word_checked(entity, word_phrase_table)
+            if (self.__is_added_phrase_word(entity, word_phrase_table)) == 0:
+                self.add_phrase_word(entity, word_phrase_table)
 
-    def add_phrase_word_checked(self, entity, word_phrase_table):
+# add to relations table file_name -> word
+    def add_phrase_word(self, entity, word_phrase_table):
         try:
             cur = self.connect.cursor()
             query_word_phrase_table = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` (`file_name`, `word`) VALUES (%s, %s);"
@@ -51,6 +53,21 @@ class Db:
     def close_connect(self):
         self.connect.close()
 
+    def __is_added_phrase_word(self, entity, word_phrase_table):
+        res = 0
+        try:
+            cur = self.connect.cursor()
+            query = f"SELECT COUNT(*) as COUNT FROM `{self.__conf['DB_DATABASE']}`.`{word_phrase_table}` WHERE `file_name`=%s AND `word`=%s"
+            cur.execute(query, (entity.file_name, entity.word))
+
+            for row in cur:
+                res = row[0]
+        except Exception as err:
+            print("error: {0}".format(err))
+        finally:
+            cur.close()
+            return res
+
     def select_words_to_translate(self, limit=1000):
         cur = self.connect.cursor()
         query = ('SELECT words.name FROM words '
@@ -60,7 +77,6 @@ class Db:
         cur.execute(query)
 
         res = []
-
         for row in cur:
             res.append(row[0])
 

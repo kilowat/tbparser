@@ -12,12 +12,6 @@ from .word_entity import WordEntity
 
 
 class WordParser:
-    """
-    parser tatoeba.org
-    :param limit: limit download elements
-    :type limit: int
-    :param file_path: path to save downloaded files
-    """
 
     def __init__(self, file_path="./tmp/", log_file_name="log/word_parser.log", yandex_key=""):
         self.__headers = {
@@ -63,6 +57,7 @@ class WordParser:
             entity.ru_text = ", ".join(word_list)
 
     def parse(self, word):
+        word = "mony"
         self.word = word
 
         entity = WordEntity(word)

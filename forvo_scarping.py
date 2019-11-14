@@ -20,7 +20,7 @@ yandex_key = conf.main['yandex_key']
 db = Db(env_config_file_path)
 
 # to do get from db
-words = db.select_words('forvo')
+words = db.select_words('sentence_word')
 
 db.close_connect()
 
@@ -31,7 +31,7 @@ def run():
     db = Db(env_config_file_path)
 
     while len(words) > 0:
-        p = Forvoparser(limit, file_path=file_path, yandex_key=yandex_key)
+        p = Forvoparser(limit, file_path=file_path)
         word = words.pop()
         res_list = p.parse(word)
 
@@ -40,10 +40,10 @@ def run():
 
         if len(res_list) > 0:
             for res in res_list:
-                db.add(res, 'forvo')
+                db.add_phrase(res, 'sentence_forvo', 'sentence_word')
         else:
             entity = WordEntity(word)
-            db.add(entity, 'forvo')
+            db.add_phrase_word_checked(entity, 'sentence_word')
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
