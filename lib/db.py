@@ -1,4 +1,8 @@
+import time
+
 import pymysql
+
+from lib.word_entity import WordEntity
 
 
 class Db:
@@ -70,15 +74,22 @@ class Db:
 
     def select_words_to_translate(self, limit=1000):
         cur = self.connect.cursor()
-        query = ('SELECT words.name FROM words '
-            'WHERE words.translate="" AND length(words.name) > 2'
+
+        query = ('SELECT words.name, words.transcription, words.translate, audio.file_name FROM words '
+            'LEFT JOIN audio ON audio.word_code=LOWER(words.name)' 
+            'WHERE (translate="" OR transcription="" OR file_name=NULL) AND LENGTH(words.name) > 2 '
             ' ORDER BY RAND() LIMIT ' + str(limit))
 
         cur.execute(query)
 
         res = []
         for row in cur:
-            res.append(row[0])
+            entity = WordEntity(row[0])
+            entity.en_text = row[0]
+            entity.ipa_text = row[1]
+            entity.ru_text = row[2]
+            entity.file_name = row[3]
+            res.append(entity)
 
         return res
 
@@ -108,4 +119,16 @@ class Db:
         except Exception as err:
             print("error: {0}".format(err))
         finally:
+            if entity.file_name != "" or entity.file_name is not None:
+             self.__update_audio_table(entity)
             cur.close()
+
+    def __update_audio_table(self, entity):
+        try:
+            query_ = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`audio` (`word_code`, `file_name`, `mime`, `size`, `created_at`, `updated_at`) VALUES (%s, %s, %s, %s, %s, %s);"
+            cur = self.connect.cursor()
+            time_now = time.strftime('%Y-%m-%d %H:%M:%S')
+            cur.execute(query_, (entity.word, entity.file_name, 'audio/mpeg', entity.file_size, time_now, time_now))
+        except Exception as err:
+            print("update audio table:")
+            print("error: {0}".format(err))

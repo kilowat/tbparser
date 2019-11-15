@@ -18,8 +18,7 @@ yandex_key = conf.main['yandex_key']
 db = Db(env_config_file_path)
 
 # to do get from db
-words = db.select_words_to_translate(limit=conf.word_conf['limit'])
-
+word_entities = db.select_words_to_translate(limit=conf.word_conf['limit'])
 
 db.close_connect()
 
@@ -29,11 +28,11 @@ start_time = time.time()
 def run():
     db = Db(env_config_file_path)
 
-    while len(words) > 0:
+    while len(word_entities) > 0:
         p = WordParser(file_path=file_path, yandex_key=yandex_key)
-        word = words.pop()
-        res = p.parse(word)
-        print(f"word:{word} finded")
+        entity = word_entities.pop()
+        res = p.parse(entity)
+        print(f"word:{entity.word} finded")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
         if res is not None:

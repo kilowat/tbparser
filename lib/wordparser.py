@@ -24,23 +24,29 @@ class WordParser:
 
     def __word_hunt(self, entity):
         url = "https://wooordhunt.ru/word/" + entity.word
+
         r = requests.get(url)
         doc = html.fromstring(r.text)
-        transcription = doc.xpath('//span[@class="transcription"]')
 
-        if len(transcription) > 0:
-            transcription_text = transcription[0].text_content()
-            transcription_text = transcription_text.replace('|', '')
-            entity.ipa_text = transcription_text
+        if entity.ipa_text == "":
+            transcription = doc.xpath('//span[@class="transcription"]')
 
-        translate = doc.xpath('//span[@class="t_inline_en"]')
+            if len(transcription) > 0:
+                transcription_text = transcription[0].text_content()
+                transcription_text = transcription_text.replace('|', '')
+                entity.ipa_text = transcription_text
 
-        if len(translate) > 0:
-            entity.ru_text = self.__clear_string(translate[0].text_content())
+        if entity.ru_text == "":
+            translate = doc.xpath('//span[@class="t_inline_en"]')
 
-        audio = doc.xpath('//audio[@id="audio_us"]//source')
-        if len(audio) > 0:
-            entity.file_url = "https://wooordhunt.ru" + audio[0].attrib['src']
+            if len(translate) > 0:
+                entity.ru_text = self.__clear_string(translate[0].text_content())
+
+        if entity.file_name == "" or entity.file_name is None:
+            audio = doc.xpath('//audio[@id="audio_us"]//source')
+
+            if len(audio) > 0:
+                entity.file_url = "https://wooordhunt.ru" + audio[0].attrib['src']
 
     def __reverso_translate(self, entity):
         url = "https://context.reverso.net/translation/english-russian/" + entity.word
@@ -56,13 +62,9 @@ class WordParser:
         if len(word_list) > 0:
             entity.ru_text = ", ".join(word_list)
 
-    def parse(self, word):
-        word = "mony"
-        self.word = word
+    def parse(self, entity):
 
-        entity = WordEntity(word)
-
-        self.__reverso_translate(entity)
+        self.word = entity.word
 
         self.__word_hunt(entity)
 
@@ -73,16 +75,20 @@ class WordParser:
             self.__reverso_translate(entity)
 
         if entity.ru_text == "":
+            self.__reverso_translate(entity)
+
+        if entity.ru_text == "":
             entity.ru_text = self.__yandex_translate(entity)
 
-        if entity.file_url == "":
-            self.__dict_file_download(entity)
+        if entity.file_name is None or entity.file_name == "":
+            if entity.file_url == "":
+                self.__dict_file_download(entity)
 
-        if entity.file_url == "":
-            self.__tureng_file_download(entity)
+            if entity.file_url == "":
+                self.__tureng_file_download(entity)
 
-        if entity.file_url:
-            self.__save_file(entity)
+            if entity.file_url:
+                self.__save_file(entity)
 
         return entity
 
@@ -92,6 +98,7 @@ class WordParser:
         content_length = header.get('content-length', 0)
 
         if content_length:
+            entity.file_size = content_length
             name = entity.word.replace(" ", "_")
             name = name.replace("-", "_")
             entity.file_name = name
