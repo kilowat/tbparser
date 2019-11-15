@@ -32,11 +32,10 @@ def run():
         p = WordParser(file_path=file_path, yandex_key=yandex_key)
         entity = word_entities.pop()
         res = p.parse(entity)
-        print(f"word:{entity.word} finded")
+        print(f"word:{res.word} ru: {res.ru_text} finded")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
-        if res is not None:
-           db.update_word_table(res)
+        db.update_word_table(res)
 
     print("--- %s seconds ---" % (time.time() - start_time))
 

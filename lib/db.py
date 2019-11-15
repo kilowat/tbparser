@@ -111,9 +111,10 @@ class Db:
 
     def update_word_table(self, entity):
         try:
+            time_now = time.strftime('%Y-%m-%d %H:%M:%S')
             cur = self.connect.cursor()
-            query_word = f"UPDATE {self.__conf['DB_DATABASE']}.words SET transcription=%s, translate=%s WHERE `name`=%s"
-            cur.execute(query_word, (entity.ipa_text, entity.ru_text, entity.word))
+            query_word = f"UPDATE {self.__conf['DB_DATABASE']}.words SET transcription=%s, translate=%s, updated_at=%s WHERE `name`=%s"
+            cur.execute(query_word, (entity.ipa_text, entity.ru_text, time_now, entity.word))
 
             self.connect.commit()
         except Exception as err:
@@ -129,6 +130,7 @@ class Db:
             cur = self.connect.cursor()
             time_now = time.strftime('%Y-%m-%d %H:%M:%S')
             cur.execute(query_, (entity.word, entity.file_name, 'audio/mpeg', entity.file_size, time_now, time_now))
+            self.connect.commit()
         except Exception as err:
             print("update audio table:")
             print("error: {0}".format(err))
