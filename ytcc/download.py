@@ -2,14 +2,13 @@
 
 from __future__ import unicode_literals
 import youtube_dl
-from pycaption import WebVTTReader, SRTReader, CaptionConverter, SRTWriter
-from os import remove
+from pycaption import WebVTTReader, CaptionConverter, SRTWriter
 import re
-from pycaption import detect_format
 from urllib.parse import urlencode
 from ytcc.storage import Storage
 from ytcc.fake_logger import FakeLogger
 import lib.eng_to_ipa as ipa
+
 
 class Download():
     base_url = 'http://www.youtube.com/watch'
@@ -40,13 +39,12 @@ class Download():
     def update_opts(self, opts: dict) -> None:
         self.opts.update(opts)
 
-    def get_captions(self, video_id: str, language: str = 'en') -> str:
-        self.parse_info(video_id)
+    def get_captions(self, video_id: str, allow_empty_ru=False) -> str:
         result = {}
         en_text = self.__parse_caption(video_id, 'en')
         ru_text = self.__parse_caption(video_id, 'ru')
 
-        if ru_text == "":
+        if en_text == "" or (ru_text == "" and allow_empty_ru !=True):
             return False
 
         result['en_text'] = en_text
@@ -57,6 +55,16 @@ class Download():
 
         result.update(info_res)
 
+        return result
+
+    def __clear_description(self, text):
+        tmp_str = text.split("\n")
+        res = []
+        for s in tmp_str:
+            if re.search("htt", s) is None:
+                s = s.replace('\n', '')
+                res.append(s)
+        result = "\n".join(res)
         return result
 
     def __parse_caption(self, video_id: str, langugae : str = 'en') -> str:
@@ -80,10 +88,10 @@ class Download():
                 info_dict = ydl.extract_info(video_id, download=False)
 
                 result = {
-                    "code" : info_dict.get("id", None),
+                    "code": info_dict.get("id", None),
                     "title": info_dict.get('title', None),
                     "thumbnail": info_dict.get('thumbnail', None),
-                    "description": info_dict.get('description', None)
+                    "description": self.__clear_description(info_dict.get('description', None))
                 }
                 return result
 

@@ -1,7 +1,8 @@
 main = dict(
     env_config_file_path="C:\\work_dir\\webserver_5_5\\OSPanel\domains\\true-english.ru\\.env",
     thread_count=4,
-    yandex_key='trnsl.1.1.20191111T142837Z.1a5859e5e1e27d84.7afee9933fe72c820e9e90e046b9578559c72412'
+    yandex_key='trnsl.1.1.20191111T142837Z.1a5859e5e1e27d84.7afee9933fe72c820e9e90e046b9578559c72412',
+    log_dir="./log/"
 )
 
 tb_conf = dict(
@@ -13,6 +14,6 @@ forvo_conf = dict(
     limit=40
 )
 word_conf = dict(
-    file_path="C:\\work_dir\\webserver_5_5\OSPanel\\domains\\true-english.ru\\storage\\app\\public\\audio",
+    file_path="C:\\work_dir\\webserver_5_5\OSPanel\\domains\\true-english.ru\\storage\\app\\public\\audio\\",
     limit=1000
 )
