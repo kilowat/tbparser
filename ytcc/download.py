@@ -15,9 +15,9 @@ class Download():
 
     def __init__(self, opts: dict = {}) -> None:
         self.opts = {
-            #'write-sub': True,
+            # 'write-sub': True,
             'skip_download': True,
-            #'writeautomaticsub': True,
+            # 'writeautomaticsub': True,
             'outtmpl': './tmp/subtitle_%(id)s',
             'logger': FakeLogger()
         }
@@ -31,7 +31,9 @@ class Download():
                 info = ydl.extract_info(url, download=False)
 
                 for item in info["entries"]:
-                    result.append(item["id"])
+                    if item is not None:
+                        result.append(item["id"])
+
             except Exception as err:
                 print("Unable to download image: {0}".format(str(err)))
             finally:
@@ -43,7 +45,6 @@ class Download():
     def get_captions(self, video_id: str, allow_empty_ru=False) -> str:
         result = {}
         en_text = self.__parse_caption(video_id, 'en')
-
 
         if not en_text:
             return False
@@ -68,6 +69,9 @@ class Download():
         return result
 
     def __cut_ru_author(self, en_text, ru_text):
+        if ru_text == False or ru_text == "" or ru_text is None:
+            return ""
+
         en_tmp = en_text.split("\n\n")
         en_first_time = en_tmp[0].split("\n")[1]
 
@@ -80,7 +84,7 @@ class Download():
             for line_index, item in enumerate(ru_tmp):
                 new_line = []
                 for key, sub_item in enumerate(item.split("\n")):
-                    if(key == 0):
+                    if (key == 0):
                         new_line.append(str(line_index + 1))
                     else:
                         new_line.append(sub_item)
@@ -161,22 +165,23 @@ class Download():
         return output
 
     def __convert_to_ipa(self, en_text):
-        list_line = en_text.split("\n")
+        list_line = en_text.split("\n\n")
+        result = []
 
-        if len(list_line) > 5:
-            result = []
-            for key, item in enumerate(list_line[:3]):
-                if key == 2:
-                    result.append(ipa.convert(item))
-                else:
-                    result.append(item)
+        for line in list_line:
+            item_in_line = line.split("\n")
+            srt_info = item_in_line[:2]
+            text = item_in_line[2:]
+            new_text_list = []
 
-            for key, line in enumerate(list_line):
-                if key > 5 and (key - 6) % 4 == 0:
-                    result.append(ipa.convert(line))
-                elif key > 3:
-                    result.append(line)
-        return "\n".join(result)
+            for item_text in text:
+                new_text_list.append(ipa.convert(item_text))
+
+            new_line = srt_info + new_text_list
+
+            result.append("\n".join(new_line))
+
+        return "\n\n".join(result)
 
 
 class DownloadException(Exception):

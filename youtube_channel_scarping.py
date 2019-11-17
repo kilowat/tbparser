@@ -10,11 +10,13 @@ env_config_file_path = conf.main['env_config_file_path']
 def run():
     db = Db(env_config_file_path)
     channels_list = db.select_youtube_channel()
+    db.connect.close()
 
     for channel_item in channels_list:
         video_list = download.all_videos(channel_item['code'])
 
         count = 0
+        db = Db(env_config_file_path)
 
         for video_item in video_list:
             data = {'code': video_item, 'section_id': channel_item['section_id'], 'en_text': "", 'ru_text': "", 'ipa_text': "", 'thumbnail': "", 'title': "",
@@ -27,7 +29,7 @@ def run():
         channel_item['video_count'] = count
         db.update_youtube_channel_table(channel_item)
 
-    db.connect.close()
+        db.connect.close()
 
 
 run()
