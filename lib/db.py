@@ -137,11 +137,13 @@ class Db:
 
     def update_or_insert_youtube_table(self, data):
         if self.__is_added_youtube_table(data):
-            self.__update_youtube_table(data)
+            return self.__update_youtube_table(data)
         else:
-            self.__insert_youtube_table(data)
+            return self.__insert_youtube_table(data)
 
     def __insert_youtube_table(self, data):
+        result = True
+
         try:
             time_now = time.strftime('%Y-%m-%d %H:%M:%S')
             cur = self.connect.cursor()
@@ -174,12 +176,13 @@ class Db:
             self.connect.commit()
         except Exception as err:
             print("Error insert to youtube table: {0}".format(str(err)))
+            result = False
         finally:
             cur.close()
+            return result
 
     def __is_added_youtube_table(self, data):
         res = 0
-
         try:
             cur = self.connect.cursor()
             query = "SELECT COUNT(*) as count FROM `youtube` WHERE code=%s"
@@ -195,6 +198,8 @@ class Db:
             return res > 0
 
     def __update_youtube_table(self, data):
+        result = True
+
         try:
             time_now = time.strftime('%Y-%m-%d %H:%M:%S')
             cur = self.connect.cursor()
@@ -224,10 +229,13 @@ class Db:
                 time_now,
                 data['code']))
             self.connect.commit()
+
         except Exception as err:
+            result = False
             print("Error update to youtube table: {0}".format(str(err)))
         finally:
             cur.close()
+            return result
 
     def select_youtube_video(self, limit):
         cur = self.connect.cursor()
@@ -246,7 +254,7 @@ class Db:
 
     def select_youtube_channel(self, limit=1):
         cur = self.connect.cursor()
-        query = ('SELECT code, section_id FROM ' + self.__conf['DB_DATABASE']+'.`youtube` '
+        query = ('SELECT code, section_id FROM ' + self.__conf['DB_DATABASE']+'.`youtube_channels` '
                 'WHERE status=0 '
                 'ORDER BY created_at ASC LIMIT ' + str(limit))
 
@@ -265,11 +273,13 @@ class Db:
             cur = self.connect.cursor()
             query = (f"UPDATE `{self.__conf['DB_DATABASE']}`.`youtube_channels` "
                      f"SET status=%s, "
+                     f"video_count=%s, "
                      f"updated_at=%s "
                      f"WHERE `code`=%s")
 
             cur.execute(query, (
                 data['status'],
+                data['video_count'],
                 time_now,
                 data['code']))
             self.connect.commit()

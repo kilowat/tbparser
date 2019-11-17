@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-
+import glob
 import re
 import os
 
@@ -15,8 +15,14 @@ class Storage():
             raise ValueError(
                 'Invalid video id attempting to write to filesystem')
 
-        return 'subtitle_{0}.{1}.{2}'.format(
+        return './tmp/subtitle_{0}.{1}.{2}'.format(
             re.sub(r'[^\w-]', '', self.video_id), self.language, s_format)
 
     def remove_file(self, s_format='vtt') -> None:
         os.remove(self.get_file_path(s_format))
+
+    @staticmethod
+    def remove_all_tmp_files():
+        files = glob.glob('./tmp/*')
+        for f in files:
+            os.remove(f)
