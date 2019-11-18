@@ -16,9 +16,11 @@ d = Download()
 #ovKqmRyOGcg
 #2Ai4iBw23xw
 
+
 def run():
     db = Db(env_config_file_path)
     video_ids = db.select_youtube_video(conf.youtube_conf['limit'])
+
     for video_item in video_ids:
         download = Download()
         caption = download.get_captions(video_item['video_id'])

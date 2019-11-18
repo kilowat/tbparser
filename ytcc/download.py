@@ -54,11 +54,10 @@ class Download():
         if ru_text == "" and not allow_empty_ru:
             return False
 
-        ru_text = self.__cut_ru_author(en_text, ru_text)
-
-        result['en_text'] = en_text
-        result['ru_text'] = ru_text
-        result['ipa_text'] = self.__convert_to_ipa(en_text)
+        result['en_text'] = self.__clear_sub(en_text)
+        ru_text = self.__clear_sub(ru_text)
+        result['ru_text'] = self.__clear_author(result["en_text"], ru_text)
+        result['ipa_text'] = self.__convert_to_ipa(result['en_text'])
 
         info_res = self.parse_info(video_id)
 
@@ -68,17 +67,46 @@ class Download():
 
         return result
 
-    def __cut_ru_author(self, en_text, ru_text):
+    def __clear_sub(self, text):
+        if text == False or text == "" or text is None:
+            return ""
+
+        result_tmp = []
+
+        tmp_text = text.split("\n\n")
+
+        for item in tmp_text:
+            if not re.search("[♪(]", item) \
+                    and not re.search("playing]", item) \
+                    and not re.search("music]", item) \
+                    and not re.search("играет]", item) \
+                    and not re.search("музыка]", item):
+                result_tmp.append(item)
+
+        result = []
+
+        for line_index, item in enumerate(result_tmp):
+            new_line = []
+            for key, sub_item in enumerate(item.split("\n")):
+                if key > 2:
+                    sub_item.replace("\n", "")
+                if key == 0:
+                    new_line.append(str(line_index + 1))
+                else:
+                    new_line.append(sub_item)
+
+            result.append("\n".join(new_line))
+
+        return "\n\n".join(result)
+
+    def __clear_author(self, en_text, ru_text):
         if ru_text == False or ru_text == "" or ru_text is None:
             return ""
 
         en_tmp = en_text.split("\n\n")
-        en_first_time = en_tmp[0].split("\n")[1]
-
         ru_tmp = ru_text.split("\n\n")
-        ru_first_time = ru_tmp[0].split("\n")[1]
 
-        if en_first_time != ru_first_time:
+        if len(en_tmp) < len(ru_tmp):
             ru_tmp = ru_tmp[1:]
             new_ru = []
             for line_index, item in enumerate(ru_tmp):
@@ -89,6 +117,15 @@ class Download():
                     else:
                         new_line.append(sub_item)
                 new_ru.append("\n".join(new_line))
+
+            return "\n\n".join(new_ru)
+
+        elif len(en_tmp) > len(ru_tmp):
+
+            new_ru = ["0\n00:00:00,000 --> 00:00:00,00\n-"]
+
+            for line_index, item in enumerate(ru_tmp):
+                new_ru.append(item);
 
             return "\n\n".join(new_ru)
         else:
