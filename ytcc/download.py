@@ -54,9 +54,13 @@ class Download():
         if ru_text == "" and not allow_empty_ru:
             return False
 
-        result['en_text'] = self.__clear_sub(en_text)
-        ru_text = self.__clear_sub(ru_text)
-        result['ru_text'] = self.__clear_author(result["en_text"], ru_text)
+        #result['en_text'] = self.__clear_sub(en_text)
+        #ru_text = self.__clear_sub(ru_text)
+        #result['ru_text'] = self.__clear_author(result["en_text"], ru_text)
+        #result['ipa_text'] = self.__convert_to_ipa(result['en_text'])
+
+        result['en_text'] = en_text
+        result['ru_text'] = ru_text
         result['ipa_text'] = self.__convert_to_ipa(result['en_text'])
 
         info_res = self.parse_info(video_id)
@@ -103,33 +107,37 @@ class Download():
         if ru_text == False or ru_text == "" or ru_text is None:
             return ""
 
+        result = ""
+
         en_tmp = en_text.split("\n\n")
         ru_tmp = ru_text.split("\n\n")
+        #Перевел или переведено
+        if re.search("ерев", ru_tmp[0]):
+            if len(en_tmp) < len(ru_tmp):
+                ru_tmp = ru_tmp[1:]
+                new_ru = []
+                for line_index, item in enumerate(ru_tmp):
+                    new_line = []
+                    for key, sub_item in enumerate(item.split("\n")):
+                        if (key == 0):
+                            new_line.append(str(line_index + 1))
+                        else:
+                            new_line.append(sub_item)
+                    new_ru.append("\n".join(new_line))
 
-        if len(en_tmp) < len(ru_tmp):
-            ru_tmp = ru_tmp[1:]
-            new_ru = []
-            for line_index, item in enumerate(ru_tmp):
-                new_line = []
-                for key, sub_item in enumerate(item.split("\n")):
-                    if (key == 0):
-                        new_line.append(str(line_index + 1))
-                    else:
-                        new_line.append(sub_item)
-                new_ru.append("\n".join(new_line))
+                result = "\n\n".join(new_ru)
+            elif len(en_tmp) > len(ru_tmp):
+                new_ru = []
+                for line_index, item in enumerate(ru_tmp):
+                    new_ru.append(item);
 
-            return "\n\n".join(new_ru)
-
-        elif len(en_tmp) > len(ru_tmp):
-
-            new_ru = ["0\n00:00:00,000 --> 00:00:00,00\n-"]
-
-            for line_index, item in enumerate(ru_tmp):
-                new_ru.append(item);
-
-            return "\n\n".join(new_ru)
+                result = "\n\n".join(new_ru)
+            else:
+                result = ru_text
         else:
-            return ru_text
+            result = ru_text
+
+        return result
 
     def __clear_description(self, text):
         tmp_str = text.split("\n")
@@ -145,7 +153,7 @@ class Download():
         result = self.get_result(video_id, langugae)
 
         if result != 0:
-            return False
+            return ""
 
         storage = Storage(video_id, langugae)
         file_path = storage.get_file_path()
@@ -155,7 +163,7 @@ class Download():
                 f.close()
         except Exception as err:
             print("Error file write subtitle: {0}".format(str(err)))
-            output = False
+            output = ""
         finally:
             return output
 

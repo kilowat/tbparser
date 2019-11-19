@@ -20,7 +20,7 @@ d = Download()
 def run():
     db = Db(env_config_file_path)
     video_ids = db.select_youtube_video(conf.youtube_conf['limit'])
-
+    db.connect.close()
     for video_item in video_ids:
         download = Download()
         caption = download.get_captions(video_item['video_id'])
@@ -34,8 +34,8 @@ def run():
             caption['code'] = video_item['video_id']
             caption['status'] = 1
 
+        db = Db(env_config_file_path)
         db.update_or_insert_youtube_table(caption)
-    db.connect.close()
-
+        db.connect.close()
 
 run()
