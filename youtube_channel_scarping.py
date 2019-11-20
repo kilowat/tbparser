@@ -9,7 +9,7 @@ env_config_file_path = conf.main['env_config_file_path']
 
 def run():
     db = Db(env_config_file_path)
-    channels_list = db.select_youtube_channel()
+    channels_list = db.select_youtube_channel(limit=conf.youtube_conf['channel_limit'])
     db.connect.close()
 
     for channel_item in channels_list:
