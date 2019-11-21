@@ -287,3 +287,34 @@ class Db:
             print("Error update to youtube table: {0}".format(str(err)))
         finally:
             cur.close()
+
+    def select_forvo_phrases(self, limit = 1000):
+        res = []
+
+        try:
+            cur = self.connect.cursor()
+            query = f"SELECT file_name, en_text FROM `{self.__conf['DB_DATABASE']}`.`sentence_forvo` WHERE ru_text='' and file_name !=''  LIMIT " + str(limit)
+            cur.execute(query)
+
+            for row in cur:
+                res.append({'file_name': row[0], 'en_text': row[1]})
+        except Exception as err:
+            print("Error select from forvo table: {0}".format(str(err)))
+        finally:
+            cur.close()
+            return res
+
+    def update_forvo_ru_text(self, file_name, ru_text):
+        try:
+            cur = self.connect.cursor()
+            query = (f"UPDATE `{self.__conf['DB_DATABASE']}`.`sentence_forvo` "
+                     f"SET ru_text=%s "
+                     f"WHERE file_name=%s")
+            cur.execute(query, (
+                ru_text,
+                file_name))
+            self.connect.commit()
+        except Exception as err:
+            print("Error update sentecne_frovo table: {0}".format(str(err)))
+        finally:
+            cur.close()

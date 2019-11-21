@@ -1,19 +1,26 @@
+
 main = dict(
-    env_config_file_path="C:\\work_dir\\webserver_5_5\\OSPanel\domains\\true-english.ru\\.env",
+    env_config_file_path="",
     thread_count=4,
-    yandex_key='trnsl.1.1.20191111T142837Z.1a5859e5e1e27d84.7afee9933fe72c820e9e90e046b9578559c72412',
-    log_dir="./log/"
+    yandex_key='',
+    log_dir=""
 )
 
 tb_conf = dict(
-    file_path="D:\\all_audio\\tb\\",
+    file_path="",
     limit=40
 )
 forvo_conf = dict(
-    file_path="D:\\all_audio\\forvo\\",
-    limit=40
+    file_path="",
+    limit=40,
+    translate_limit=5000
 )
 word_conf = dict(
-    file_path="C:\\work_dir\\webserver_5_5\OSPanel\\domains\\true-english.ru\\storage\\app\\public\\audio\\",
+    file_path="",
     limit=1000
 )
+youtube_conf = dict(
+    channel_limit=5,
+    limit=1000
+)
+
