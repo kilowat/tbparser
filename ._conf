@@ -8,11 +8,13 @@ main = dict(
 
 tb_conf = dict(
     file_path="",
-    limit=40
+    limit=40,
+    word_limit=5000
 )
 forvo_conf = dict(
     file_path="",
     limit=40,
+    word_limit=5000,
     translate_limit=5000
 )
 word_conf = dict(

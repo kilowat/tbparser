@@ -20,7 +20,7 @@ yandex_key = conf.main['yandex_key']
 db = Db(env_config_file_path)
 
 # to do get from db
-words = db.select_words('sentence_word')
+words = db.select_words('sentence_word', conf.forvo_conf['word_limit'])
 
 db.close_connect()
 

@@ -19,7 +19,7 @@ file_path = conf.tb_conf['file_path']
 db = Db(env_config_file_path)
 
 # to do get from db
-words = db.select_words('phrases_word')
+words = db.select_words('phrases_word', conf.tb_conf['word_limit'])
 
 db.close_connect()
 
