@@ -42,11 +42,12 @@ class WordHunParser:
         chunk_list = list(self.__chunks(ex, 2))
 
         for chunk in chunk_list:
-            result.append({
-                "en_text": chunk[0],
-                "ru_text": chunk[1],
-                "ipa_text": ipa.convert(chunk[0])
-            })
+            if len(chunk) > 1:
+                result.append({
+                    "en_text": chunk[0],
+                    "ru_text": chunk[1],
+                    "ipa_text": ipa.convert(chunk[0])
+                })
 
         return result
 
