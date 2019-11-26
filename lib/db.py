@@ -109,6 +109,25 @@ class Db:
 
         return res
 
+    def select_example_words(self, table="examples", limit=1000):
+        cur = self.connect.cursor()
+        query = ('SELECT words.id, words.name FROM words '
+                'LEFT JOIN '+ table +' ON '+table+'.word_id=words.id '
+                'WHERE '+ table +'.word_id IS NULL AND length(words.name) > 2'
+                ' ORDER BY words.name DESC LIMIT ' + str(limit))
+
+        cur.execute(query)
+
+        res = []
+
+        for row in cur:
+            res.append({
+                'id': row[0],
+                'name': row[1]
+            })
+
+        return res
+
     def update_word_table(self, entity):
         try:
             time_now = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -316,5 +335,18 @@ class Db:
             self.connect.commit()
         except Exception as err:
             print("Error update sentecne_frovo table: {0}".format(str(err)))
+        finally:
+            cur.close()
+
+    def add_example(self, word, json_text, word_id):
+        try:
+            cur = self.connect.cursor()
+            query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`examples` (`word`, `word_id`,`json_text`) VALUES (%s, %s, %s);"
+
+            cur.execute(query, (word, word_id, json_text))
+
+            self.connect.commit()
+        except Exception as err:
+            print("error: {0}".format(err))
         finally:
             cur.close()
