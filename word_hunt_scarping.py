@@ -31,7 +31,6 @@ def run():
         word = words.pop()
         res = p.parse(word['name'])
         db.add_example(word=word['name'], json_text=json.dumps(res), word_id=word['id'])
-        print(res)
         print(f"word:{word} find:{len(res)}")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
@@ -50,5 +49,5 @@ for i in range(thread_count):
     t.start()
 
 now = datetime.datetime.now()
-logging.basicConfig(filename=conf.main['log_dir'] + 'tb_info.log', level=logging.INFO)
+logging.basicConfig(filename=conf.main['log_dir'] + 'word_hunt_info.log', level=logging.INFO)
 logging.info("time end work:" + str(now)[:19])
