@@ -32,7 +32,7 @@ def run():
         p = WordParser(file_path=file_path, yandex_key=yandex_key)
         entity = word_entities.pop()
         res = p.parse(entity)
-        print(f"word:{res.word} finded")
+        print(f"word:{res.word.encode('ascii', 'ignore').decode('ascii')} finded")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
         db.update_word_table(res)

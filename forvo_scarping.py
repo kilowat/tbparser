@@ -35,7 +35,7 @@ def run():
         word = words.pop()
         res_list = p.parse(word)
 
-        print(f"word:{word} find:{len(res_list)}")
+        print(f"word:{word.encode('ascii', 'ignore').decode('ascii')} find:{len(res_list)}")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
         if len(res_list) > 0:

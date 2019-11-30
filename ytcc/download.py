@@ -24,7 +24,7 @@ class Download():
         self.opts.update(opts)
 
     def all_videos(self, url):
-        with youtube_dl.YoutubeDL({'ignoreerrors': True, 'abort-on-error': False}) as ydl:
+        with youtube_dl.YoutubeDL({'ignoreerrors': True, 'abort-on-error': False, 'sleep-interval': 90}) as ydl:
             result = []
             try:
                 result = []
