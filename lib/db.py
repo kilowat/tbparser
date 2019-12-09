@@ -377,3 +377,16 @@ class Db:
         finally:
             cur.close()
 
+    def add_word(self, word):
+        try:
+            time_now = time.strftime('%Y-%m-%d %H:%M:%S')
+            cur = self.connect.cursor()
+            query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`words` (`name`, `transcription`, `translate`, `created_at`, `updated_at`) VALUES (%s, %s, %s, %s, %s);"
+
+            cur.execute(query, (word, "", "", time_now, time_now))
+
+            self.connect.commit()
+        except Exception as err:
+            print("error: {0}".format(err))
+        finally:
+            cur.close()

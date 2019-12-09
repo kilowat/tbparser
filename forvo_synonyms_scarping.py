@@ -39,6 +39,9 @@ def run():
 
             db.add_synonyms(word, synonym)
 
+            if synonym:
+                db.add_word(synonym)
+
         print(f"word:{word.encode('ascii', 'ignore').decode('ascii')} find:{len(res_list)}")
         print("time: %s seconds ---" % int((time.time() - start_time)))
 
