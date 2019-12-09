@@ -350,3 +350,30 @@ class Db:
             print("error: {0}".format(err))
         finally:
             cur.close()
+
+    def add_f_verb(self, en_text, ru_text, ip_text, json_example):
+        try:
+            cur = self.connect.cursor()
+            query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`verbs` (`en_text`, `ru_text`, `ipa_text`, `examples`) VALUES (%s, %s, %s, %s);"
+
+            cur.execute(query, (en_text, ru_text, ip_text, json_example))
+
+            self.connect.commit()
+        except Exception as err:
+            print("error: {0}".format(err))
+        finally:
+            cur.close()
+
+    def add_synonyms(self, word, synonym=""):
+        try:
+            cur = self.connect.cursor()
+            query = f"INSERT INTO `{self.__conf['DB_DATABASE']}`.`synonyms` (`word`, `synonym`) VALUES (%s, %s);"
+
+            cur.execute(query, (word, synonym))
+
+            self.connect.commit()
+        except Exception as err:
+            print("error: {0}".format(err))
+        finally:
+            cur.close()
+
