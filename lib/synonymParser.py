@@ -27,10 +27,15 @@ class SynonymParser:
 
         result = []
 
-        r = requests.Session().get(self.__get_url(), headers=self.__headers)
+        my_session = requests.session()
+        for_cookies = my_session.get("https://forvo.com")
+        cookies = for_cookies.cookies
+        r = my_session.get(self.__get_url(), headers=self.__headers, cookies=cookies)
+        self.doc = html.fromstring(r.text)
+
         if r.status_code != 200:
-            self.__error_log('forvo parser error '+r.status_code)
-            raise Exception('forvo parser error '+r.status_code)
+            self.__error_log('forvo parser error ' + str(r.status_code))
+            raise Exception('forvo parser error ' + str(r.status_code))
 
         self.doc = html.fromstring(r.text)
 
