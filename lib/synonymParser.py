@@ -27,7 +27,7 @@ class SynonymParser:
 
         result = []
 
-        r = requests.get(self.__get_url(), headers=self.__headers)
+        r = requests.Session().get(self.__get_url(), headers=self.__headers)
         self.doc = html.fromstring(r.text)
 
         items = self.doc.cssselect('.synonyms li')

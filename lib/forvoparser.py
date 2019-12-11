@@ -23,6 +23,8 @@ class Forvoparser:
         self.__downloaded = 0
         self.__log_file_name = log_file_name
         self.yandex_key = yandex_key
+        self.__headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
 
     def __get_url(self):
         if self.page < 2:
@@ -40,7 +42,7 @@ class Forvoparser:
         return result
 
     def __run_chunk(self, word, result):
-        r = requests.get(self.__get_url())
+        r = requests.Session().get(self.__get_url(), headers=self.__headers)
         self.doc = html.fromstring(r.text)
 
         items = self.doc.cssselect('.list-phrases ul li')
