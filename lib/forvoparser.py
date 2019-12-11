@@ -24,7 +24,7 @@ class Forvoparser:
         self.__log_file_name = log_file_name
         self.yandex_key = yandex_key
         self.__headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        'User-Agent': 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2224.3 Safari/537.36'}
 
     def __get_url(self):
         if self.page < 2:
@@ -51,7 +51,7 @@ class Forvoparser:
         if r.status_code != 200:
             self.__error_log('forvo parser error ' + str(r.status_code))
             raise Exception('forvo parser error ' + str(r.status_code))
-        
+
         items = self.doc.cssselect('.list-phrases ul li')
 
         for item in items:
