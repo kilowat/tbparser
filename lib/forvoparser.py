@@ -8,7 +8,6 @@ from lxml import html
 from .word_entity import WordEntity
 from yandex.Translater import Translater
 
-
 class Forvoparser:
 
     def __init__(self, limit=100, file_path="./tmp/", log_file_name="log/forvo_parser.log", yandex_key=""):
@@ -48,7 +47,7 @@ class Forvoparser:
         r = my_session.get(self.__get_url(), headers=self.__headers, cookies=cookies)
         self.doc = html.fromstring(r.text)
 
-        if r.status_code != 200:
+        if r.status_code == 403:
             self.__error_log('forvo parser error ' + str(r.status_code))
             raise Exception('forvo parser error ' + str(r.status_code))
 

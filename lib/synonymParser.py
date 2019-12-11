@@ -14,32 +14,30 @@ class SynonymParser:
     def __init__(self, log_file_name="log/forvo_synonym_parser.log"):
         self.word = ""
         self.ru_text_query = 'div[@class="direct translations"]//div[@class="text"]'
-        self.en_text_query = 'a[@class="word"]'
+        self.en_text_query = 'a'
         self.__log_file_name = log_file_name
         self.__headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2224.3 Safari/537.36'}
 
     def __get_url(self):
-            return "https://forvo.com/word/"+self.word+"/#en"
+            return "https://www.merriam-webster.com/dictionary/"+self.word
+            #return "https://forvo.com/word/"+self.word+"/#en"
 
     def parse(self, word):
         self.word = word
 
         result = []
 
-        my_session = requests.session()
-        for_cookies = my_session.get("https://forvo.com")
-        cookies = for_cookies.cookies
-        r = my_session.get(self.__get_url(), headers=self.__headers, cookies=cookies)
+        r = requests.get(self.__get_url(), headers=self.__headers)
         self.doc = html.fromstring(r.text)
 
-        if r.status_code != 200:
-            self.__error_log('forvo parser error ' + str(r.status_code))
-            raise Exception('forvo parser error ' + str(r.status_code))
+        if r.status_code == 403:
+            self.__error_log('synonym parser error ' + str(r.status_code))
+            raise Exception('synonym parser error ' + str(r.status_code))
 
         self.doc = html.fromstring(r.text)
 
-        items = self.doc.cssselect('.synonyms li')
+        items = self.doc.cssselect('.synonyms_list li')
 
         for item in items:
             entity = WordEntity(word)

@@ -19,7 +19,7 @@ db = Db(env_config_file_path)
 
 # to do get from db
 words = db.select_words("synonyms")
-#words = ['run']
+#words = ['run','traveling']
 
 db.close_connect()
 
