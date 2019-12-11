@@ -28,6 +28,10 @@ class SynonymParser:
         result = []
 
         r = requests.Session().get(self.__get_url(), headers=self.__headers)
+        if r.status_code == 403:
+            self.__error_log('forvo parser error 403')
+            raise Exception('forvo parser error 403')
+
         self.doc = html.fromstring(r.text)
 
         items = self.doc.cssselect('.synonyms li')
