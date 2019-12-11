@@ -59,5 +59,5 @@ for i in range(thread_count):
     t.start()
 
 now = datetime.datetime.now()
-logging.basicConfig(filename=conf.main['log_dir']+'forvo_info.log', level=logging.INFO)
+logging.basicConfig(filename=conf.main['log_dir']+'forvo_synonym_info.log', level=logging.INFO)
 logging.info("time end work:" + str(now)[:19])

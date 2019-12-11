@@ -11,7 +11,7 @@ from yandex.Translater import Translater
 
 class SynonymParser:
 
-    def __init__(self, log_file_name="log/forvo_parser.log"):
+    def __init__(self, log_file_name="log/forvo_synonym_parser.log"):
         self.word = ""
         self.ru_text_query = 'div[@class="direct translations"]//div[@class="text"]'
         self.en_text_query = 'a[@class="word"]'
