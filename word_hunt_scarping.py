@@ -27,6 +27,7 @@ def run():
     db = Db(env_config_file_path)
 
     while len(words) > 0:
+        time.sleep(conf.main['sleep'])
         p = WordHunParser()
         word = words.pop()
         res = p.parse(word['name'])

@@ -29,6 +29,7 @@ def run():
     db = Db(env_config_file_path)
 
     while len(word_entities) > 0:
+        time.sleep(conf.main['sleep'])
         p = WordParser(file_path=file_path, yandex_key=yandex_key)
         entity = word_entities.pop()
         res = p.parse(entity)

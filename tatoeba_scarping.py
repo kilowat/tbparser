@@ -30,6 +30,7 @@ def run():
     db = Db(env_config_file_path)
 
     while len(words) > 0:
+        time.sleep(conf.main['sleep'])
         p = TBparser(limit, file_path=file_path)
         word = words.pop()
         res_list = p.parse(word)
