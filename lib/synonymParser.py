@@ -28,9 +28,9 @@ class SynonymParser:
         result = []
 
         r = requests.Session().get(self.__get_url(), headers=self.__headers)
-        if r.status_code == 403:
-            self.__error_log('forvo parser error 403')
-            raise Exception('forvo parser error 403')
+        if r.status_code != 200:
+            self.__error_log('forvo parser error '+r.status_code)
+            raise Exception('forvo parser error '+r.status_code)
 
         self.doc = html.fromstring(r.text)
 

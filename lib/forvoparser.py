@@ -44,9 +44,9 @@ class Forvoparser:
     def __run_chunk(self, word, result):
         r = requests.Session().get(self.__get_url(), headers=self.__headers)
         self.doc = html.fromstring(r.text)
-        if r.status_code == 403:
-            self.__error_log('forvo parser error 403')
-            raise Exception('forvo parser error 403')
+        if r.status_code != 200:
+            self.__error_log('forvo parser error '+r.status_code)
+            raise Exception('forvo parser error '+r.status_code)
         items = self.doc.cssselect('.list-phrases ul li')
 
         for item in items:
